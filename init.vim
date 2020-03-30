@@ -11,27 +11,40 @@ Plug 'junegunn/fzf', { 'do': './install --bin' }
 Plug 'junegunn/fzf.vim'
 
 " linting and syntax highlighting
-Plug 'w0rp/ale'
+" Plug 'w0rp/ale'
 
 " completion
-Plug 'Herringtondarkholme/yats.vim'
-Plug 'mhartington/nvim-typescript', { 'do': './install.sh' }
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+" Plug 'autozimu/LanguageClient-neovim', {
+    " \ 'branch': 'next',
+    " \ 'do': 'bash install.sh',
+    " \ }
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+" Plug 'Herringtondarkholme/yats.vim'
+" Plug 'mhartington/nvim-typescript', { 'do': './install.sh' }
+" Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+" Plug 'Shougo/echodoc.vim'
 
 " helpers
 Plug 'tpope/vim-surround'
 Plug 'scrooloose/nerdcommenter'
 Plug 'ciaranm/detectindent'
+Plug 'moll/vim-bbye'
+Plug 'airblade/vim-rooter'
 
-" misc
+" UI
+Plug 'psliwka/vim-smoothie'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
+" git
 Plug 'tpope/vim-fugitive'
+Plug 'airblade/vim-gitgutter'
 
 call plug#end()
 
 filetype plugin indent on
+
+set tags=.git/tags
 
 set encoding=utf-8
 set fileencoding=utf-8
@@ -74,10 +87,12 @@ syntax on
 set ruler
 set number
 set relativenumber
+set signcolumn=yes
 
 
 "" Status bar
 set laststatus=2
+set cmdheight=2
 
 "" Use modeline overrides
 set modeline
@@ -109,11 +124,12 @@ vnoremap ˚ :m '<-2<CR>gv=gv
 set t_Co=256
 colorscheme nord
 
+
 " nerdtree
 
 " open nerdtree when no file is opened
-autocmd StdinReadPre * let s:std_in=1
-autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+" autocmd StdinReadPre * let s:std_in=1
+" autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
 
 " close vim when only nerdtree tab remains
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
@@ -128,21 +144,23 @@ map <C-_> <leader>c<space>
 
 " ale
 let g:ale_fix_on_save = 1
-let g:ale_lint_on_text_changed = 'never'
-let g:ale_lint_on_insert_leave = 0
-let g:ale_lint_on_enter = 0
 let g:ale_open_list = 1
 let g:ale_linters_explicit = 1
+let g:ale_history_log_output = 1
 
 nmap <silent> <C-k> <Plug>(ale_previous_wrap)
 nmap <silent> <C-j> <Plug>(ale_next_wrap)
 
 " deoplete
-let g:deoplete#enable_at_startup = 1
+" let g:deoplete#enable_at_startup = 1
 
-call deoplete#custom#option('sources', {
-            \ '_': ['ale'],
-            \})
+" call deoplete#custom#option('sources', {
+            " \ '_': ['ale'],
+            " \})
+
+" echodoc
+" let g:echodoc#enable_at_startup = 1
+" let g:echodoc#type = 'signature'
 
 " airline
 let g:airline_theme='base16_nord'
@@ -155,4 +173,34 @@ let g:airline#extensions#ale#enabled = 1
 " fzf
 let g:fzf_buffers_jump = 1
 nnoremap <C-p> :Files<CR>
+set rtp+=/usr/local/opt/fzf
 
+" LanguageClient-Neovim
+" let g:LanguageClient_serverCommands = {
+    " \ 'rust': ['$HOME/.cargo/bin/rustup', 'run', 'stable', 'rls'],
+    " \ 'javascript': ['typescript-language-server', '--stdio'],
+    " \ 'javascript.jsx': ['typescript-language-server', '--stdio'],
+    " \ 'typescript': ['typescript-language-server', '--stdio'],
+    " \ 'typescript.tsx': ['typescript-language-server', '--stdio'],
+    " \ }
+
+" function SetLSPShortcuts()
+" endfunction()
+
+" augroup LSP
+    " autocmd!
+    " autocmd FileType rust,typescript,typescriptreact,javascript,javascriptreact call SetLSPShortcuts()
+" augroup END
+
+" coc
+autocmd FileType json syntax match Comment +\/\/.\+$+
+autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
+inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+
+" bbye
+noremap <leader>q :Bdelete<CR>
+
+" automatically generate ctags for php projects
+au BufWritePost *.php silent! !eval '[ -f ".git/hooks/ctags" ] && .git/hooks/ctags' &
+
+" vim: ft=vim
